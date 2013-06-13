@@ -1,7 +1,12 @@
 from base64 import b64decode
+from json import dumps
 from unittest import (
     main,
     TestCase,
+    )
+from unittest.mock import (
+    MagicMock,
+    patch,
     )
 
 from feedbin.feedbin import Feedbin
@@ -32,6 +37,18 @@ class FeedBinTestCase(TestCase):
         self.assertEqual(
             'http://api.feedbin.me/v2/entries.json?foo=bar',
             req.get_full_url())
+
+    def test_handle_request(self):
+        f = Feedbin('jsmith@example.com','secret')
+        f._makeRequest = MagicMock(name="_makeRequest")
+        with patch('feedbin.feedbin.urlopen') as mock:
+            mock_response = MagicMock(name="response")
+            mock_response.read.return_value = dumps({'foo': ['bar']})
+            mock.return_value = mock_response
+            data = f._handleRequest('entries', {'fizz': 'buzz'})
+        f._makeRequest.assert_called_with('entries', {'fizz': 'buzz'})
+        self.assertDictEqual({'foo': ['bar']}, data)
+        
 
 if __name__ == '__main__':
     main() 

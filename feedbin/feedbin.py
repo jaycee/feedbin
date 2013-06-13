@@ -1,9 +1,13 @@
 from base64 import b64encode
+from json import loads 
 from urllib.parse import (
     urlencode,
     urljoin,
     )
-from urllib.request import Request
+from urllib.request import (
+    Request,
+    urlopen,
+    )
 
 class Feedbin:
     
@@ -26,3 +30,8 @@ class Feedbin:
         req = Request(url)
         req.add_header('Authorization', self._auth_string)
         return req
+
+    def _handleRequest(self, resource, params=None):
+        req = self._makeRequest(resource, params)
+        data = urlopen(req).read()
+        return loads(data)
